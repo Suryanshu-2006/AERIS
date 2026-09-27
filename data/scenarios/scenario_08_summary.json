@@ -1,0 +1,11 @@
+{
+  "scenario_id": "SCENARIO_08",
+  "name": "Unknown Anomaly",
+  "description": "Lean mixture on CYL3 at low severity \u2014 may not match known patterns clearly.",
+  "seed": 49,
+  "duration_seconds": 60.0,
+  "events": [],
+  "final_health": 93.46,
+  "final_risk": 0.285,
+  "csv_file": "scenario_08_telemetry.csv"
+}

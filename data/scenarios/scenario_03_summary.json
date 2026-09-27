@@ -1,0 +1,11 @@
+{
+  "scenario_id": "SCENARIO_03",
+  "name": "Turbo Boost Deficiency",
+  "description": "Turbocharger performance degradation.",
+  "seed": 44,
+  "duration_seconds": 60.0,
+  "events": [],
+  "final_health": 93.77499999999999,
+  "final_risk": 0.287,
+  "csv_file": "scenario_03_telemetry.csv"
+}

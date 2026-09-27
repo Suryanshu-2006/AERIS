@@ -1,0 +1,11 @@
+{
+  "scenario_id": "SCENARIO_01",
+  "name": "Healthy Cruise",
+  "description": "Normal engine operation during standard surveillance mission. No faults.",
+  "seed": 42,
+  "duration_seconds": 60.0,
+  "events": [],
+  "final_health": 93.6,
+  "final_risk": 0.279,
+  "csv_file": "scenario_01_telemetry.csv"
+}

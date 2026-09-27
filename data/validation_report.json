@@ -1,0 +1,50 @@
+{
+  "title": "AERIS Digital Twin Validation Report",
+  "timestamp": 1790493583.1568813,
+  "summary": {
+    "total_checks": 6,
+    "passed": 6,
+    "failed": 0,
+    "pass_rate": "100.0%"
+  },
+  "results": {
+    "Physics": [
+      {
+        "check": "ISA Atmosphere Pressure/Temp Lapse",
+        "status": "PASS",
+        "details": "SL: 29.92 inHg / 15.0\u00b0C -> 18k ft: 14.94 inHg / -20.7\u00b0C"
+      },
+      {
+        "check": "Throttle Power Scaling",
+        "status": "PASS",
+        "details": "Idle Power: 15.5 HP -> Full Power: 150.2 HP"
+      },
+      {
+        "check": "Cylinder Thermal Heat Transfer",
+        "status": "PASS",
+        "details": "Healthy CHT: 113.2\u00b0C -> Damaged Fin CHT: 129.5\u00b0C"
+      }
+    ],
+    "Sensor Integrity": [
+      {
+        "check": "Isolated Sensor Bias Disentanglement",
+        "status": "PASS",
+        "details": "Diagnosed Category: SENSOR, Fault: egt_3_SENSOR_FAULT"
+      }
+    ],
+    "Counterfactual": [
+      {
+        "check": "Full Physics Rerun on Parameter Alteration",
+        "status": "PASS",
+        "details": "Baseline Risk: 0.190 -> Modified: 0.377"
+      }
+    ],
+    "Test Suite": [
+      {
+        "check": "Pytest Suite (14 unit/integration tests)",
+        "status": "PASS",
+        "details": "Pytest return code: 0"
+      }
+    ]
+  }
+}

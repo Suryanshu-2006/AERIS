@@ -1,0 +1,11 @@
+{
+  "scenario_id": "SCENARIO_02",
+  "name": "Oil Pressure Degradation",
+  "description": "Progressive oil pressure loss beginning at 60s simulation time.",
+  "seed": 43,
+  "duration_seconds": 60.0,
+  "events": [],
+  "final_health": 93.20500000000001,
+  "final_risk": 0.287,
+  "csv_file": "scenario_02_telemetry.csv"
+}

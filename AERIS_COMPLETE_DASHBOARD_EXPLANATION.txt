@@ -1,0 +1,469 @@
+====================================================================================================
+  AERIS: AEROSPACE ENGINE RISK & INTELLIGENCE SYSTEM
+  COMPLETE DASHBOARD SPECIFICATION & TECHNICAL REFERENCE MANUAL
+  DRDO Smart India Hackathon (SIH26054)
+  AI-Enabled Real-Time Digital Twin System for Aero Piston Engines in MALE UAVs
+====================================================================================================
+
+DOCUMENT PURPOSE:
+This document explains each and every component, panel, button, metric, algorithm, and workflow
+in the AERIS Ground Control Station (GCS). It provides exhaustive answers to:
+  1. WHAT is each element on the dashboard?
+  2. WHY is it doing what it is doing?
+  3. WHERE does its data originate (Physics Simulation, Sensor Telemetry, Digital Twin, or AI)?
+  4. HOW does it fulfill the three core DRDO requirements:
+     - Question 1: What is happening to the engine now?
+     - Question 2: What is likely to happen next?
+     - Question 3: Can the engine safely complete the mission, and what happens if conditions change?
+
+====================================================================================================
+TABLE OF CONTENTS:
+====================================================================================================
+1. SYSTEM ARCHITECTURE & CORE PHILOSOPHY
+2. MULTI-AIRCRAFT FLEET MONITORING (10 UAVS EXPLAINED)
+3. SECTION 1: COCKPIT HEADER & SQUADRON CONTROLS
+4. SECTION 2: HEALTH OVERVIEW & PROGNOSTICS (LEFT PANEL)
+5. SECTION 3: GENERIC TWIN-ENGINE DIGITAL TWIN DETECTOR (CENTER PANEL)
+6. SECTION 4: MISSION DIGITAL TWIN & FLIGHT PHASE RISK (RIGHT PANEL)
+7. SECTION 5: ENGINE TELEMETRY & RESIDUAL DECOMPOSITION (ROW 2)
+8. SECTION 6: MULTI-HYPOTHESIS FAULT DIAGNOSIS & EXPLAINABILITY (ROW 3 LEFT)
+9. SECTION 7: COUNTERFACTUAL WHAT-IF MISSION SIMULATOR (ROW 3 RIGHT)
+10. SECTION 8: SCENARIO REPLAY & VALIDATION BENCH (ROW 4)
+11. SECTION 9: FAULT INJECTION MATRIX & SENSOR ISOLATION TESTING
+12. MATHEMATICAL & PHYSICAL FORMULATIONS
+
+====================================================================================================
+1. SYSTEM ARCHITECTURE & CORE PHILOSOPHY
+====================================================================================================
+Traditional UAV monitoring systems rely on simple threshold exceedance alarms (e.g., if oil pressure
+drops below 35 psi, flash a red light). By the time a static threshold triggers at 20,000 feet, 
+bearing seizure or turbo failure is already imminent.
+
+AERIS replaces passive alarms with an active Dual Digital Twin:
+  A. THE ENGINE DIGITAL TWIN:
+     Runs continuous first-principles thermodynamics in parallel with the real engine. It models
+     air intake, turbocharger boost, 4-cylinder Boxer combustion, cylinder cooling convection,
+     hydrodynamic oil film lubrication, and high-frequency structural vibration.
+     Every sensor channel is compared against its physical expected value to compute a normalized
+     residual drift:
+         Residual (sigma) = (Measured_Sensor_Value - Expected_Twin_Value) / Sensor_Noise_StdDev
+
+  B. THE MISSION DIGITAL TWIN:
+     Models the entire flight plan (Ground -> Takeoff -> Climb -> Transit Cruise -> Loiter Patrol ->
+     Descent -> Landing) through standard International Standard Atmosphere (ISA) altitude tables,
+     calculating thermal fatigue, bearing wear, and oil degradation across time.
+
+====================================================================================================
+2. MULTI-AIRCRAFT FLEET MONITORING (10 UAVS EXPLAINED)
+====================================================================================================
+To reflect real-world Indian Air Force, Navy, and DRDO operational ground stations, AERIS monitors
+a squadron of 10 distinct twin-engine UAVs. Every UAV has distinct operating altitudes, airspeeds,
+temperatures, health scores, and sortie missions.
+
+----------------------------------------------------------------------------------------------------
+UAV-01: TAPAS-BH-201 (Tail #IAF-201) [CALLSIGN: GARUDA-1]
+----------------------------------------------------------------------------------------------------
+- Aircraft Type: Tactical Medium-Altitude Long-Endurance (MALE) UAV.
+- Propulsion: Twin Rotax 914 Turbocharged 4-Cylinder Boxer Engines (Port & Starboard nacelles).
+- Mission Status: ACTIVE SORTIE (Climb Phase @ 18,400 ft, 115 kts).
+- Engine State: NOMINAL (93.2% Health). Baseline real-time physics simulation stream (20Hz).
+- Purpose: Primary baseline surveillance demonstration.
+
+----------------------------------------------------------------------------------------------------
+UAV-02: HERON-TP MARITIME (Tail #IN-404) [CALLSIGN: OCEAN-EYE-2]
+----------------------------------------------------------------------------------------------------
+- Aircraft Type: Long-Range Maritime Surveillance UAV.
+- Propulsion: Twin Turbo-Diesel Aero Piston Heavy Fuel Engines (2x 160 HP).
+- Mission Status: LOITER PATROL (@ 22,000 ft over Arabian Sea, 125 kts).
+- Engine State: HEALTHY / OPTIMAL (98.2% Health).
+- Operating Parameters: Cold sea-air conditions (Ambient -22°C), Low oil thermal stress (82.5°C).
+- Predicted RUL: 1,420 hours. Safe Horizon: 480 hours. Risk: 12% (READY).
+
+----------------------------------------------------------------------------------------------------
+UAV-03: RUSTOM-II (Tail #DR-108) [CALLSIGN: RUSTOM-TEST-3]
+----------------------------------------------------------------------------------------------------
+- Aircraft Type: DRDO Indigenous MALE UAV Developmental Platform.
+- Propulsion: Twin Boxer Piston Engines (Lycoming/Rotax).
+- Mission Status: HIGH-ALTITUDE CRUISE (@ 25,500 ft, 108 kts).
+- Engine State: NOMINAL (95.8% Health).
+- Operating Parameters: Thin air density (Ambient Pressure 11.2 inHg), high turbo boost (4.2 psi).
+- Predicted RUL: 1,180 hours. Safe Horizon: 360 hours. Risk: 22% (READY).
+
+----------------------------------------------------------------------------------------------------
+UAV-04: TAPAS-BH-201B (Tail #IAF-209) [CALLSIGN: GARUDA-9] *** THE CRITICAL FAULTY AIRCRAFT ***
+----------------------------------------------------------------------------------------------------
+- Aircraft Type: Tactical MALE UAV in Critical In-Flight Degradation.
+- Propulsion: Twin Rotax 914 Turbo (Port Engine Experiencing Severe Mechanical Failure).
+- Mission Status: ACTIVE SORTIE (@ 17,200 ft, 98 kts).
+- Active In-Flight Failure:
+  * Port Engine Main Oil Seal Rupture and Journal Bearing Lubrication Loss.
+  * Oil Pressure dropped to 31.4 psi (CRITICAL: Below 38 psi redline threshold!).
+  * Oil Temperature spiked to 114.2°C due to boundary lubrication metal-on-metal friction.
+  * Structural Vibration surged to 0.285 g (3.6x normal nominal baseline).
+  * Digital Twin Residual: OIL_PRESSURE = -4.8 sigma (Extremely anomalous deviation).
+- Engine Health: CRITICAL (54.2 / 100). Lubrication subsystem score: 38.5% (FAILED).
+- Multivariate Anomaly Score: 0.842 (Severity: CRITICAL).
+- Prognostic Assessment:
+  * Remaining Useful Life (RUL): 14.8 hours.
+  * Mission-Safe Horizon: 2.4 hours before hydrodynamic bearing film collapse and total seizure!
+  * Total Mission Risk: 82.4% (Readiness: NOT_READY / EMERGENCY RTB).
+- AI Decision Advisory:
+  "RTB IMMEDIATE: THROTTLE BACK PORT ENGINE TO 45% ECO — SHIFT LOAD TO STARBOARD ENGINE — DIVERT TO NEAREST BASE"
+- Why it matters for evaluators:
+  Proves that AERIS detects localized single-nacelle mechanical failure, compares it against the
+  healthy starboard engine, and issues preventative diversion before catastrophic engine seizure.
+
+----------------------------------------------------------------------------------------------------
+UAV-05: ARCHER-NG TWIN (Tail #IA-501) [CALLSIGN: ARCHER-STRIKE-5]
+----------------------------------------------------------------------------------------------------
+- Aircraft Type: Weaponized Twin-Engine Reconnaissance & Precision Strike UAV.
+- Propulsion: Twin High-Compression Aero Piston Engines (2x 180 HP).
+- Mission Status: ACTIVE SORTIE (Border Surveillance @ 16,000 ft, 130 kts).
+- Engine State: EXCELLENT (96.4% Health).
+- Operating Parameters: Manifold Pressure 20.2 inHg, Turbo Boost 3.9 psi, Mean EGT 652°C.
+
+----------------------------------------------------------------------------------------------------
+UAV-06: HERON MK-II TWIN (Tail #IN-412) [CALLSIGN: COAST-GUARDIAN-6]
+----------------------------------------------------------------------------------------------------
+- Aircraft Type: Heavy Fuel Twin Turbo-Diesel Coastal Reconnaissance UAV.
+- Mission Status: COASTAL LOITER (@ 12,000 ft, 112 kts).
+- Engine State: NOMINAL (97.5% Health).
+- Operating Parameters: Oil Pressure 65.2 psi, Oil Temp 81.8°C, RPM 5,350.
+
+----------------------------------------------------------------------------------------------------
+UAV-07: ABHYAS-TWIN (Tail #DR-220) [CALLSIGN: ABHYAS-EXP-7]
+----------------------------------------------------------------------------------------------------
+- Aircraft Type: High-Speed High-Output Propulsion Testbed.
+- Mission Status: CLIMB DASH (@ 24,000 ft, 145 kts).
+- Engine State: HIGH STRESS (91.2% Health).
+- Operating Parameters: RPM 6,100, Turbo Boost 4.8 psi, Mean EGT 685°C.
+
+----------------------------------------------------------------------------------------------------
+UAV-08: RUSTOM-I DUAL-TESTBED (Tail #DR-102) [CALLSIGN: RUSTOM-TRAINER-8]
+----------------------------------------------------------------------------------------------------
+- Aircraft Type: Low-Altitude Training & Avionics Calibration Platform.
+- Mission Status: TAKEOFF / PATROL (@ 8,000 ft, 95 kts).
+- Engine State: PRISTINE (99.2% Health).
+- Operating Parameters: Naturally aspirated profile (28.5 inHg MAP, 0.0 psi boost).
+
+----------------------------------------------------------------------------------------------------
+UAV-09: TAPAS-BH-201C (Tail #IAF-215) [CALLSIGN: DESERT-FALCON-9]
+----------------------------------------------------------------------------------------------------
+- Aircraft Type: Desert Frontier Surveillance Platform.
+- Mission Status: LOITER (@ 19,500 ft, 118 kts).
+- Engine State: ELEVATED THERMAL STRESS (88.5% Health).
+- Operating Conditions: Hot desert day (+15°C ISA temperature anomaly).
+  Cylinder Head Temperature (CHT) elevated to 148°C due to reduced convective air cooling density.
+
+----------------------------------------------------------------------------------------------------
+UAV-10: GHATAK-TESTBED (Tail #IAF-901) [CALLSIGN: STEALTH-TWIN-10]
+----------------------------------------------------------------------------------------------------
+- Aircraft Type: Advanced FADEC Ground Validation Testbed.
+- Mission Status: GROUND STANDBY (Runway Apron @ 0 ft, 0 kts, 1,450 RPM idle warmup).
+- Engine State: FACTORY NEW (100.0% Health).
+
+====================================================================================================
+3. SECTION 1: COCKPIT HEADER & SQUADRON CONTROLS
+====================================================================================================
+LOCATION: Top fixed bar of the Ground Control Station.
+
+WHAT IS DISPLAYED:
+1. Brand Identity & Classification:
+   - "Æ AERIS" logo with subtitle "DRDO SIH26054".
+   - Classification tags: "GENERIC TWIN-ENGINE MALE UAV".
+2. Aircraft Fleet Switcher:
+   - Interactive dropdown allowing instantaneous switching between all 10 UAVs in the fleet.
+   - Tail number (#IAF-201, #IAF-209, etc.), sortie status, and engine configuration.
+3. Real-Time Telemetry Link Status:
+   - Pulsing green beacon indicating live 20Hz bidirectional streaming.
+   - Simulation Clock: Displays mission elapsed time (e.g., T+1285.4s).
+4. Simulation Speed Multiplier Pills (1x, 5x, 10x, 20x):
+   - Active speed pill is highlighted in solid blue.
+   - Allows users to accelerate physical aging and fast-time mission progression.
+5. Simulation Executive Controls (RUN / PAUSE / RESET):
+   - Green RUN button starts physics integration.
+   - Amber PAUSE button freezes the digital twin state for inspection.
+   - RESET button rolls simulation time back to T=0.0s.
+6. Fault Injection Trigger & Active Fault Counter:
+   - Opens the modal to inject calibrated physical failure modes.
+   - Shows active injected fault count badge with a 1-click "CLEAR FAULTS" button.
+
+====================================================================================================
+4. SECTION 2: HEALTH OVERVIEW & PROGNOSTICS (LEFT PANEL)
+====================================================================================================
+LOCATION: Row 1, Left Column (spans 3 of 12 grid columns).
+
+PURPOSE: Answers Question 1 ("What is happening now?") and Question 2 ("What is likely to happen next?").
+
+DETAILED BREAKDOWN:
+1. Aircraft & Dual-Engine Health Overview:
+   - Displays real-time health for both engines side-by-side:
+     * PORT ENGINE (#1): e.g., 93% (Monitored nacelle).
+     * STARBOARD ENGINE (#2): e.g., 99% (Peer benchmark twin nacelle).
+   - Airworthiness tag: Green "AIRWORTHY" or Red "DEGRADED / CRITICAL".
+2. Predicted Remaining Useful Life (RUL):
+   - Derived from physics-informed degradation extrapolation (Arrhenius thermal fatigue + 
+     Archard adhesive mechanical wear).
+   - Displays estimated operating hours remaining until failure threshold (e.g., 1062.1h ±238h).
+   - Confidence percentage (e.g., 70% confidence).
+3. Mission Safe Horizon:
+   - The critical time remaining before the engine breaches its certified operational safety envelope
+     under the CURRENT mission profile (e.g., 317.6h).
+   - Limiter Subsystem: Identifies the exact bottleneck (e.g., "Limiter: Turbo degradation under mission conditions").
+4. Subsystem Degradation Matrix:
+   - Formatted in a clean 2-column layout with individual progress bars:
+     * Combustion Health: Monitored through cyclic EGT variance.
+     * Cooling Health: Monitored through cylinder head thermal resistance.
+     * Lubrication Health: Monitored through oil hydrodynamic pressure and shear viscosity.
+     * Turbocharger Health: Monitored through compressor pressure ratio and spool speed.
+     * Mechanical Health: Monitored through crankshaft vibration harmonics.
+     * Electrical Health: Monitored through 28V bus voltage regulation and alternator load.
+5. Multivariate Anomaly Detection Status:
+   - Uses an ensemble of autoencoder reconstruction error and Mahalanobis distance.
+   - Anomaly Score: 0.105 (Nominal) up to 0.842 (Critical Alarm).
+   - Displays persistent severity state: HEALTHY, CAUTION, or CRITICAL.
+
+====================================================================================================
+5. SECTION 3: GENERIC TWIN-ENGINE DIGITAL TWIN DETECTOR (CENTER PANEL)
+====================================================================================================
+LOCATION: Row 1, Center Column (spans 5 of 12 grid columns).
+
+PURPOSE: Provides real-time cross-engine differential monitoring for any twin-engine MALE UAV.
+
+WHY A GENERIC TWIN-ENGINE DETECTOR?
+In twin-engine aircraft, ambient environmental variations (such as a 40°C temperature drop during
+climb to 25,000 ft or turbulence load spikes) affect BOTH engines equally. 
+A naive single-engine detector often triggers false alarms during climbs because temperatures drop
+naturally. AERIS calculates the Cross-Engine Differential:
+    Delta_MAP = MAP_Engine1 - MAP_Engine2
+    Delta_EGT = EGT_Engine1 - EGT_Engine2
+    Delta_CHT = CHT_Engine1 - CHT_Engine2
+    Delta_OilPress = OilPress_Engine1 - OilPress_Engine2
+By subtracting peer nacelle values, common atmospheric disturbances cancel out, isolating true
+single-engine mechanical defects instantly.
+
+DETAILED BREAKDOWN:
+1. Nacelle Selector Tabs:
+   - "DUAL NACELLE (TWIN)": Simultaneous side-by-side view.
+   - "PORT (ENG 1)": Primary test engine view.
+   - "STBD (ENG 2)": Peer benchmark engine view.
+   - "TWIN Delta SYNC": Differential balance analyzer.
+2. Dual-Nacelle Comparative Cards:
+   - Left Card (PORT NACELLE): Shows active MAP, EGT, CHT, Oil Pressure, and Digital Twin Residual.
+   - Center Card (TWIN Delta DIFFERENTIAL): Displays exact deltas (e.g., Delta EGT = +4.2°C).
+     Prominently displays: "Common-Mode: CANCELED".
+   - Right Card (STARBOARD NACELLE): Shows benchmark peer readings.
+3. Powertrain Functional Flow (2x2 Grid):
+   - Circuit 1: TURBOCHARGER & INTAKE (Boost Pressure, MAP, Residual sigma).
+   - Circuit 2: 4-CYLINDER COMBUSTION CORE (Mean EGT, Engine RPM, Cylinder Balance).
+   - Circuit 3: CYLINDER COOLING ENVELOPE (Mean CHT, Thermal Margin to 260°C limit, Cooling Health).
+   - Circuit 4: LUBRICATION & OIL CIRCUIT (Oil Pressure, Oil Temperature, Lubrication Residual).
+4. Per-Cylinder Boxer Matrix (Cylinders 1, 2, 3, 4):
+   - Rotax 914 / Boxer layout: Left bank (Cylinders 1 & 3), Right bank (Cylinders 2 & 4).
+   - Individual Exhaust Gas Temperature (EGT) bar and readout.
+   - Individual Cylinder Head Temperature (CHT) bar and readout.
+   - Live twin residual drift per cylinder (e.g., +0.2 sigma vs +2.8 sigma drift).
+
+====================================================================================================
+6. SECTION 4: MISSION DIGITAL TWIN & FLIGHT PHASE RISK (RIGHT PANEL)
+====================================================================================================
+LOCATION: Row 1, Right Column (spans 4 of 12 grid columns).
+
+PURPOSE: Answers Question 3 ("Can the engine safely complete the selected mission?").
+
+DETAILED BREAKDOWN:
+1. Mission Readiness Badge:
+   - Green READY: Low risk (<30%), all parameters nominal.
+   - Amber CAUTION: Moderate risk (30-60%), one or more subsystems degraded.
+   - Rose WARNING: High risk (>60%), mission completion questionable.
+   - Red NOT_READY: Critical failure envelope breached, emergency diversion required.
+2. Flight Profile 7-Phase Progression:
+   - Structured in a 2-tier pipeline with full non-truncated phase names:
+     * Stage 1: Ground Operations / Taxi.
+     * Stage 2: Takeoff & Initial Climb.
+     * Stage 3: Climb to Operational Ceiling.
+     * Stage 4: Transit Cruise (Active phase highlighted in solid blue).
+     * Stage 5: Loiter / Surveillance Patrol (Tagged as CRITICAL PHASE due to maximum thermal wear).
+     * Stage 6: Descent.
+     * Stage 7: Landing & Recovery.
+3. Total Mission Risk Score:
+   - A calibrated probability metric (0% to 100%) integrating component failure probabilities
+     multiplied by phase severity weights.
+4. Critical Phase Identification:
+   - Highlights the highest-risk phase of the flight plan (e.g., LOITER or CLIMB) where the
+     engine experiences the lowest thermal safety margins.
+5. Safe Margin to Horizon:
+   - Time remaining before any engine subsystem exceeds DRDO airworthiness limits.
+6. Active Risk Drivers:
+   - Bulleted list explaining why risk is elevated (e.g., "Thermal envelope reduced by 15°C hot day").
+
+====================================================================================================
+7. SECTION 5: ENGINE TELEMETRY & RESIDUAL DECOMPOSITION (ROW 2)
+====================================================================================================
+LOCATION: Full-width row across the center of the dashboard.
+
+PURPOSE: Real-time telemetry monitoring with one-click Digital Twin residual decomposition.
+
+CHANNELS MONITORED:
+1. Engine Speed (RPM): 1,400 idle up to 5,800 max continuous cruise.
+2. Manifold Pressure (MAP): Measured in inHg (15.0 inHg high-altitude up to 39.5 inHg full boost).
+3. Mean EGT: Combustion temperature across all 4 cylinders (°C).
+4. Mean CHT: Cylinder head temperature (°C), redline at 260°C.
+5. Oil Pressure: Lubrication pressure in psi (normal 55-65 psi, warning < 38 psi).
+6. Oil Temperature: Oil bulk temperature in °C (normal 80-95°C, warning > 110°C).
+7. Turbo Boost: Gauge boost pressure above ambient in psi (0 to 12 psi).
+8. Structural Vibration: High-frequency accelerometer in g (normal < 0.1g, warning > 0.25g).
+9. Fuel Flow: Volumetric consumption rate in gallons per hour (gph).
+10. Bus Voltage: Avionics DC bus voltage (normal 28.0 - 29.5 V).
+
+VIEW MODE TOGGLE BUTTONS:
+- [MEASURED]: Displays the raw sensor reading directly from aircraft telemetry.
+- [TWIN EXPECTED]: Displays what the physical digital twin calculates the value SHOULD be under
+  the exact current altitude, ambient air density, and throttle position.
+- [RESIDUAL (sigma)]: Displays the normalized deviation between Measured and Expected:
+  * Green (< 1.5 sigma): Normal measurement noise.
+  * Amber (1.5 - 3.0 sigma): Developing drift or minor wear.
+  * Rose (> 3.0 sigma): Confirmed anomaly or failure mode.
+
+====================================================================================================
+8. SECTION 6: MULTI-HYPOTHESIS FAULT DIAGNOSIS & EXPLAINABILITY (ROW 3 LEFT)
+====================================================================================================
+LOCATION: Row 3, Left Column (spans 6 of 12 grid columns).
+
+PURPOSE: Distinguishes between REAL MECHANICAL ENGINE FAULTS and FALSE SENSOR DRIFT.
+
+WHY MULTI-HYPOTHESIS IS CRITICAL:
+A single thermocouple reporting 780°C EGT could mean either:
+  Hypothesis A: A real lean fuel burn or injector blockage (Mechanical emergency).
+  Hypothesis B: A faulty thermocouple wire with an electrical bias (Sensor artifact).
+Shutting down a UAV engine at 20,000 feet due to a broken sensor wire results in loss of aircraft.
+AERIS runs cross-sensor physical correlation:
+  If EGT rises BUT CHT and vibration do NOT correlate -> Isolated as SENSOR FAULT.
+  If EGT rises AND adjacent CHT and oil temp rise -> Isolated as MECHANICAL COMBUSTION FAULT.
+
+DETAILED BREAKDOWN:
+1. Primary Diagnosis Card:
+   - Displays the highest-likelihood fault hypothesis with Confidence % and Severity %.
+   - Subsystem classification badge: SENSOR FAULT (Purple) vs MECHANICAL FAULT (Rose).
+2. Decision Support Advisory:
+   - Clear operational directive: "CONTINUE MISSION", "MONITOR RESIDUALS", or "RTB DIVERSION".
+3. Explainability Evidence Chain:
+   - Step-by-step physical causality audit trail showing how the AI reached its conclusion:
+     * Step 1: Residual anomaly detection.
+     * Step 2: Cross-engine twin comparison.
+     * Step 3: Multi-sensor thermal and mechanical correlation.
+     * Step 4: Final diagnostic isolation.
+4. Alternative Hypotheses Evaluated:
+   - Shows competing explanations with Bayesian posterior probabilities (e.g., Oil Seal Leak: 88%
+     vs Oil Pressure Sensor Bias: 12%).
+
+====================================================================================================
+9. SECTION 7: COUNTERFACTUAL WHAT-IF MISSION SIMULATOR (ROW 3 RIGHT)
+====================================================================================================
+LOCATION: Row 3, Right Column (spans 6 of 12 grid columns).
+
+PURPOSE: Answers: "What happens if mission parameters change?"
+
+HOW IT WORKS:
+While the primary simulation continues monitoring the live UAV, clicking "RUN WHAT-IF SIMULATION"
+spawns a parallel thermodynamic solver. It projects the entire remaining flight plan under modified
+conditions and computes delta outcomes against the baseline mission.
+
+CONTROLS & PRESET BUTTONS:
+1. Quick Presets:
+   - "High Altitude (28k ft)": Evaluates thin air cooling and turbo compressor limits.
+   - "Hot Day (+15°C ISA)": Evaluates desert environment convective cooling penalties.
+   - "Extended Loiter (120m)": Evaluates thermal fatigue during protracted surveillance.
+   - "Low-Risk Eco Profile": Throttles back to 60% cruise to preserve engine life.
+2. Interactive Sliders:
+   - Target Altitude: 5,000 ft to 30,000 ft.
+   - Ambient Temp (ISA Deviation): -20°C (Winter Arctic) to +45°C (Desert Frontier).
+   - Loiter Duration: 15 min to 240 min (4 hours).
+   - Cruise Throttle: 50% (Eco) to 100% (Full Power).
+3. Comparative Outcome Cards:
+   - Mission Risk Delta: e.g., "+18.2% Risk" (Rose) or "-6.4% Risk" (Emerald).
+   - Safe Horizon Delta: e.g., "-1.4h Safe Margin" (Rose) or "+2.2h Safe Margin" (Emerald).
+   - Critical Phase Shift: e.g., "CLIMB -> LOITER".
+   - Counterfactual Advisory: Actionable recommendation generated from physics deltas.
+
+====================================================================================================
+10. SECTION 8: SCENARIO REPLAY & VALIDATION BENCH (ROW 4)
+====================================================================================================
+LOCATION: Full-width bottom bar.
+
+PURPOSE: Provides 10 deterministic test benches for SIH benchmark validation.
+
+PRECONFIGURED SCENARIOS:
+1. Scenario 01: Nominal Healthy Cruise (Baseline surveillance mission).
+2. Scenario 02: Oil Pressure Loss (Progressive oil seal failure).
+3. Scenario 03: Turbo Boost Deficiency (Compressor degradation at altitude).
+4. Scenario 04: Cylinder 2 Cooling Degradation (Baffle plate blockage).
+5. Scenario 05: Crankshaft Bearing Wear (Elevated friction and high-g vibration).
+6. Scenario 06: EGT3 Sensor Fault (Thermocouple bias proving sensor isolation).
+7. Scenario 07: Combined Sensor + Engine Anomaly (Dual-mode simultaneous degradation).
+8. Scenario 08: Unknown Anomaly (Uncataloged multivariate residual drift).
+9. Scenario 09: High-Altitude Ceiling Stress (28,000 ft operational boundary).
+10. Scenario 10: Long Loiter Mission (Extended 3-hour wear accumulation).
+
+====================================================================================================
+11. SECTION 9: FAULT INJECTION MATRIX & SENSOR ISOLATION TESTING
+====================================================================================================
+LOCATION: Modal window triggered by the "INJECT FAULT" button in the header.
+
+PURPOSE: Allows evaluators to inject physical faults and sensor artifacts in real time to observe
+how the digital twin and AI respond.
+
+FAULT CATALOG:
+1. Oil Pressure Loss (MECHANICAL):
+   Simulates progressive seal leak. Causes oil pressure to drop and oil temperature to rise.
+2. Cylinder 2 Cooling Degradation (MECHANICAL):
+   Simulates cooling baffle loss. Causes Cylinder 2 CHT to rise while other cylinders remain cool.
+3. Turbo Boost Deficiency (MECHANICAL):
+   Simulates wastegate leak. Causes manifold pressure loss at high altitudes.
+4. Crankshaft Bearing Wear (MECHANICAL):
+   Simulates journal bearing wear. Elevates 2x engine RPM vibration harmonics.
+5. Lean Mixture Cylinder 3 (MECHANICAL):
+   Simulates injector restriction. Causes EGT3 to spike into lean-burn zone.
+6. EGT3 Sensor Bias (+120°C) (SENSOR):
+   Simulates thermocouple calibration shift. EGT3 rises, but CHT3 and oil temp do NOT rise.
+   AI correctly diagnoses this as a SENSOR FAULT, not an engine fault.
+7. Oil Pressure Sensor Bias (-15 psi) (SENSOR):
+   Simulates pressure transducer drift. Engine vibration and temperature remain cool.
+   AI isolates sensor fault without recommending unnecessary emergency landing.
+
+====================================================================================================
+12. MATHEMATICAL & PHYSICAL FORMULATIONS
+====================================================================================================
+
+1. AIR DENSITY & ISA ATMOSPHERE:
+   P(h) = P_0 * (1 - L * h / T_0) ^ (g * M / (R * L))
+   rho(h) = P(h) / (R_spec * T(h))
+   Models the exact loss of volumetric efficiency and convective cooling at MALE UAV altitudes.
+
+2. MANIFOLD PRESSURE (MAP):
+   MAP = Ambient_Pressure + Turbo_Boost_Pressure - Throttle_Pressure_Drop
+
+3. CYLINDER EXHAUST GAS TEMPERATURE (EGT):
+   EGT_cyl = T_manifold + DeltaT_combustion(phi, timing) - Heat_Loss_Wall
+
+4. NORMALIZED DIGITAL TWIN RESIDUAL:
+   r_i = (y_sensor,i - y_twin,i) / sigma_sensor,i
+
+5. MULTIVARIATE ANOMALY MAHALANOBIS DISTANCE:
+   D_M(r) = sqrt( (r - mu)^T * Sigma^-1 * (r - mu) )
+   Computes correlated anomalies across pressure, temperature, and vibration channels.
+
+6. PROGNOSTIC REMAINING USEFUL LIFE (RUL):
+   RUL = (Threshold_Limit - Current_Degradation) / (d(Degradation)/dt)
+   where degradation integrates Arrhenius thermal stress:
+       k_deg = A * exp(-E_a / (R * T_engine))
+
+====================================================================================================
+SUMMARY FOR DRDO / SIH EVALUATION:
+AERIS is a complete, functioning, physics-informed digital twin designed specifically for twin-engine
+MALE UAVs. It delivers complete operational clarity:
+  - Tracks individual Port and Starboard engines simultaneously.
+  - Eliminates common atmospheric climb artifacts via cross-engine differential analysis.
+  - Separates sensor artifacts from mechanical emergencies.
+  - Simulates counterfactual "What-If" mission changes in parallel without interrupting flight.
+====================================================================================================

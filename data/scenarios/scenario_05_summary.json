@@ -1,0 +1,11 @@
+{
+  "scenario_id": "SCENARIO_05",
+  "name": "Bearing Wear",
+  "description": "Main bearing wear causing vibration increase and oil system stress.",
+  "seed": 46,
+  "duration_seconds": 60.0,
+  "events": [],
+  "final_health": 93.31,
+  "final_risk": 0.282,
+  "csv_file": "scenario_05_telemetry.csv"
+}

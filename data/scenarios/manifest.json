@@ -1,0 +1,112 @@
+[
+  {
+    "scenario_id": "SCENARIO_01",
+    "name": "Healthy Cruise",
+    "description": "Normal engine operation during standard surveillance mission. No faults.",
+    "seed": 42,
+    "duration_seconds": 60.0,
+    "events": [],
+    "final_health": 93.6,
+    "final_risk": 0.279,
+    "csv_file": "scenario_01_telemetry.csv"
+  },
+  {
+    "scenario_id": "SCENARIO_02",
+    "name": "Oil Pressure Degradation",
+    "description": "Progressive oil pressure loss beginning at 60s simulation time.",
+    "seed": 43,
+    "duration_seconds": 60.0,
+    "events": [],
+    "final_health": 93.20500000000001,
+    "final_risk": 0.287,
+    "csv_file": "scenario_02_telemetry.csv"
+  },
+  {
+    "scenario_id": "SCENARIO_03",
+    "name": "Turbo Boost Deficiency",
+    "description": "Turbocharger performance degradation.",
+    "seed": 44,
+    "duration_seconds": 60.0,
+    "events": [],
+    "final_health": 93.77499999999999,
+    "final_risk": 0.287,
+    "csv_file": "scenario_03_telemetry.csv"
+  },
+  {
+    "scenario_id": "SCENARIO_04",
+    "name": "Cylinder Cooling Degradation",
+    "description": "Cooling fin obstruction on cylinder 2, causing CHT rise.",
+    "seed": 45,
+    "duration_seconds": 60.0,
+    "events": [],
+    "final_health": 93.665,
+    "final_risk": 0.275,
+    "csv_file": "scenario_04_telemetry.csv"
+  },
+  {
+    "scenario_id": "SCENARIO_05",
+    "name": "Bearing Wear",
+    "description": "Main bearing wear causing vibration increase and oil system stress.",
+    "seed": 46,
+    "duration_seconds": 60.0,
+    "events": [],
+    "final_health": 93.31,
+    "final_risk": 0.282,
+    "csv_file": "scenario_05_telemetry.csv"
+  },
+  {
+    "scenario_id": "SCENARIO_06",
+    "name": "EGT3 Sensor Fault",
+    "description": "EGT3 sensor bias \u2014 should be identified as sensor fault, not engine fault.",
+    "seed": 47,
+    "duration_seconds": 60.0,
+    "events": [],
+    "final_health": 86.23000000000002,
+    "final_risk": 0.316,
+    "csv_file": "scenario_06_telemetry.csv"
+  },
+  {
+    "scenario_id": "SCENARIO_07",
+    "name": "Combined Sensor + Engine Anomaly",
+    "description": "Oil pressure sensor bias AND bearing wear simultaneously.",
+    "seed": 48,
+    "duration_seconds": 60.0,
+    "events": [],
+    "final_health": 90.55,
+    "final_risk": 0.322,
+    "csv_file": "scenario_07_telemetry.csv"
+  },
+  {
+    "scenario_id": "SCENARIO_08",
+    "name": "Unknown Anomaly",
+    "description": "Lean mixture on CYL3 at low severity \u2014 may not match known patterns clearly.",
+    "seed": 49,
+    "duration_seconds": 60.0,
+    "events": [],
+    "final_health": 93.46,
+    "final_risk": 0.285,
+    "csv_file": "scenario_08_telemetry.csv"
+  },
+  {
+    "scenario_id": "SCENARIO_09",
+    "name": "High-Altitude Mission",
+    "description": "Normal engine at high altitude (28000 ft) \u2014 tests thermal and turbo behavior.",
+    "seed": 50,
+    "duration_seconds": 60.0,
+    "events": [],
+    "final_health": 93.405,
+    "final_risk": 0.346,
+    "csv_file": "scenario_09_telemetry.csv"
+  },
+  {
+    "scenario_id": "SCENARIO_10",
+    "name": "Long-Duration Loiter Mission",
+    "description": "Extended 3-hour loiter \u2014 tests degradation accumulation over time.",
+    "seed": 51,
+    "duration_seconds": 60.0,
+    "events": [],
+    "final_health": 93.53,
+    "final_risk": 0.279,
+    "csv_file": "scenario_10_telemetry.csv"
+  }
+]

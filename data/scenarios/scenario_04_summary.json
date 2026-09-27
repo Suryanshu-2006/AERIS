@@ -1,0 +1,11 @@
+{
+  "scenario_id": "SCENARIO_04",
+  "name": "Cylinder Cooling Degradation",
+  "description": "Cooling fin obstruction on cylinder 2, causing CHT rise.",
+  "seed": 45,
+  "duration_seconds": 60.0,
+  "events": [],
+  "final_health": 93.665,
+  "final_risk": 0.275,
+  "csv_file": "scenario_04_telemetry.csv"
+}

@@ -1,0 +1,11 @@
+{
+  "scenario_id": "SCENARIO_06",
+  "name": "EGT3 Sensor Fault",
+  "description": "EGT3 sensor bias \u2014 should be identified as sensor fault, not engine fault.",
+  "seed": 47,
+  "duration_seconds": 60.0,
+  "events": [],
+  "final_health": 86.23000000000002,
+  "final_risk": 0.316,
+  "csv_file": "scenario_06_telemetry.csv"
+}

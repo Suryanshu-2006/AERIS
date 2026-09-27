@@ -1,0 +1,11 @@
+{
+  "scenario_id": "SCENARIO_09",
+  "name": "High-Altitude Mission",
+  "description": "Normal engine at high altitude (28000 ft) \u2014 tests thermal and turbo behavior.",
+  "seed": 50,
+  "duration_seconds": 60.0,
+  "events": [],
+  "final_health": 93.405,
+  "final_risk": 0.346,
+  "csv_file": "scenario_09_telemetry.csv"
+}

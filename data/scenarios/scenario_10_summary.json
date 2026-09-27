@@ -1,0 +1,11 @@
+{
+  "scenario_id": "SCENARIO_10",
+  "name": "Long-Duration Loiter Mission",
+  "description": "Extended 3-hour loiter \u2014 tests degradation accumulation over time.",
+  "seed": 51,
+  "duration_seconds": 60.0,
+  "events": [],
+  "final_health": 93.53,
+  "final_risk": 0.279,
+  "csv_file": "scenario_10_telemetry.csv"
+}

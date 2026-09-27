@@ -1,0 +1,11 @@
+{
+  "scenario_id": "SCENARIO_07",
+  "name": "Combined Sensor + Engine Anomaly",
+  "description": "Oil pressure sensor bias AND bearing wear simultaneously.",
+  "seed": 48,
+  "duration_seconds": 60.0,
+  "events": [],
+  "final_health": 90.55,
+  "final_risk": 0.322,
+  "csv_file": "scenario_07_telemetry.csv"
+}

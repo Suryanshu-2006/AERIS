@@ -1,0 +1,1564 @@
+<USER_REQUEST>
+App name AERIS — Aerospace Engine Risk & Intelligence SystemYou are the lead software architect and implementation engineer.
+
+Build a complete working prototype for the DRDO Smart India Hackathon problem:
+
+**SIH26054 — AI-Enabled Real-Time Digital Twin System for Aero Piston Engines in MALE UAVs**
+
+The project must NOT be a simple dashboard, CRUD application, or generic AI demo.
+
+The core concept is:
+
+> **Engine Digital Twin + Mission Digital Twin + Predictive Intelligence + Counterfactual Mission Simulation**
+
+The system should answer three questions:
+
+1. **What is happening to the engine now?**
+2. **What is likely to happen next?**
+3. **Can the engine safely complete the selected mission, and what happens if the mission conditions change?**
+
+---
+
+# 1. IMPORTANT ENGINEERING RULES
+
+Follow these rules throughout the implementation:
+
+* Build a real runnable system, not pseudocode.
+* Do not leave major components as TODO placeholders.
+* Use clean modular architecture.
+* Every major prediction must have an explainable evidence trail.
+* Keep physics simulation, sensor simulation, AI inference, mission simulation and UI logically separated.
+* Do not directly modify sensor values to simulate mechanical faults.
+* A physical fault must propagate:
+
+Physical fault
+→ engine subsystem state
+→ engine observable state
+→ sensor measurements
+→ digital twin residual
+→ anomaly detection
+→ diagnosis
+→ degradation
+→ mission risk.
+
+Sensor faults must be simulated separately:
+
+Sensor fault
+→ sensor measurement corruption
+→ sensor integrity analysis
+→ sensor fault classification
+
+This distinction is extremely important.
+
+---
+
+# 2. CORE ARCHITECTURE
+
+Implement this pipeline:
+
+```text
+Telemetry / Simulator
+        ↓
+Flight Environment
+        ↓
+Engine Physics Model
+        ↓
+Sensor Model
+        ↓
+Digital Twin
+        ↓
+State Estimation
+        ↓
+Residual Engine
+        ↓
+Sensor Integrity
+        ↓
+Anomaly Detection
+        ↓
+Fault Diagnosis
+        ↓
+Health Estimation
+        ↓
+Degradation / RUL
+        ↓
+Explainability
+        ↓
+Mission Digital Twin
+        ↓
+Mission Risk Engine
+        ↓
+Counterfactual Simulation
+        ↓
+Maintenance / Operator Recommendation
+        ↓
+API + WebSocket
+        ↓
+Ground Control Dashboard
+```
+
+Do not collapse all of this into one Python file.
+
+---
+
+# 3. TECHNOLOGY STACK
+
+## Backend
+
+Use:
+
+* Python 3.11+
+* FastAPI
+* Pydantic
+* NumPy
+* Pandas
+* SciPy
+* scikit-learn
+* PyTorch where ML is actually useful
+* WebSockets
+* Uvicorn
+
+## Frontend
+
+Use:
+
+* React
+* Vite
+* TypeScript
+* TailwindCSS
+* Three.js
+* Recharts or equivalent charting library
+
+## Storage
+
+Use:
+
+* SQLite for prototype persistence
+* JSON/CSV for scenario datasets
+
+Do NOT introduce unnecessary infrastructure such as Kafka, Kubernetes, Redis, cloud databases, etc.
+
+The prototype must run locally.
+
+---
+
+# 4. PROJECT STRUCTURE
+
+Create this structure:
+
+```text
+aerotwin/
+│
+├── backend/
+│   ├── app/
+│   │   ├── main.py
+│   │   ├── config.py
+│   │   │
+│   │   ├── api/
+│   │   │   ├── telemetry.py
+│   │   │   ├── simulation.py
+│   │   │   ├── missions.py
+│   │   │   ├── faults.py
+│   │   │   └── health.py
+│   │   │
+│   │   ├── core/
+│   │   │   ├── orchestrator.py
+│   │   │   ├── state_manager.py
+│   │   │   └── event_bus.py
+│   │   │
+│   │   ├── simulation/
+│   │   │   ├── environment.py
+│   │   │   ├── flight_profile.py
+│   │   │   ├── engine.py
+│   │   │   ├── combustion.py
+│   │   │   ├── cooling.py
+│   │   │   ├── lubrication.py
+│   │   │   ├── turbo.py
+│   │   │   ├── vibration.py
+│   │   │   ├── sensors.py
+│   │   │   └── faults.py
+│   │   │
+│   │   ├── twin/
+│   │   │   ├── physics_model.py
+│   │   │   ├── state_estimator.py
+│   │   │   ├── residual_engine.py
+│   │   │   ├── health_state.py
+│   │   │   └── drift_monitor.py
+│   │   │
+│   │   ├── ai/
+│   │   │   ├── anomaly.py
+│   │   │   ├── diagnosis.py
+│   │   │   ├── severity.py
+│   │   │   └── calibration.py
+│   │   │
+│   │   ├── prognostics/
+│   │   │   ├── degradation.py
+│   │   │   ├── rul.py
+│   │   │   └── uncertainty.py
+│   │   │
+│   │   ├── explainability/
+│   │   │   ├── evidence.py
+│   │   │   └── explainer.py
+│   │   │
+│   │   ├── mission/
+│   │   │   ├── mission_model.py
+│   │   │   ├── mission_risk.py
+│   │   │   ├── readiness.py
+│   │   │   └── what_if.py
+│   │   │
+│   │   ├── data/
+│   │   │   ├── generator.py
+│   │   │   ├── scenarios.py
+│   │   │   └── provenance.py
+│   │   │
+│   │   └── schemas/
+│   │       ├── telemetry.py
+│   │       ├── engine.py
+│   │       ├── diagnosis.py
+│   │       └── mission.py
+│   │
+│   ├── tests/
+│   └── requirements.txt
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── hooks/
+│   │   ├── services/
+│   │   ├── types/
+│   │   └── App.tsx
+│   └── package.json
+│
+├── data/
+│   ├── scenarios/
+│   ├── generated/
+│   └── replay/
+│
+├── models/
+│
+├── docs/
+│   ├── ARCHITECTURE.md
+│   ├── PHYSICS_MODEL.md
+│   ├── AI_MODEL.md
+│   ├── VALIDATION.md
+│   └── API.md
+│
+├── scripts/
+│
+├── README.md
+└── docker-compose.yml
+```
+
+---
+
+# 5. ENGINE MODEL
+
+Create a simplified but physically meaningful aero piston engine model.
+
+The model should include:
+
+* RPM
+* manifold absolute pressure
+* throttle
+* fuel flow
+* air flow
+* exhaust gas temperature
+* cylinder head temperature
+* oil pressure
+* oil temperature
+* vibration
+* electrical bus voltage
+* turbo boost
+* ambient pressure
+* ambient temperature
+* altitude
+
+For multiple cylinders, support:
+
+```text
+Cylinder 1
+Cylinder 2
+Cylinder 3
+Cylinder 4
+```
+
+Create relationships between variables.
+
+For example:
+
+```text
+Throttle
+   ↓
+Airflow
+   ↓
+Fuel / Air Ratio
+   ↓
+Combustion
+   ↓
+Torque + EGT + CHT
+   ↓
+RPM
+```
+
+and:
+
+```text
+RPM + load
+     ↓
+Oil system
+     ↓
+Oil pressure + oil temperature
+```
+
+and:
+
+```text
+Turbo boost
+     ↓
+Manifold pressure
+     ↓
+Air mass
+     ↓
+Combustion performance
+```
+
+Do not attempt to claim that this is an exact DRDO engine model.
+
+Label it internally as:
+
+**Physics-informed demonstrator model**
+
+---
+
+# 6. FLIGHT ENVIRONMENT
+
+Implement:
+
+* altitude
+* ambient temperature
+* ambient pressure
+* throttle
+* payload/load
+* mission phase
+* flight duration
+
+Mission phases:
+
+```text
+TAKEOFF
+CLIMB
+CRUISE
+SURVEILLANCE
+LOITER
+DESCENT
+LANDING
+```
+
+Each phase should affect expected engine operating conditions.
+
+---
+
+# 7. SENSOR SYSTEM
+
+Create simulated sensors:
+
+```text
+EGT1
+EGT2
+EGT3
+EGT4
+
+CHT1
+CHT2
+CHT3
+CHT4
+
+Oil Pressure
+Oil Temperature
+MAP
+RPM
+Vibration
+Bus Voltage
+Fuel Flow
+Turbo Boost
+```
+
+Each sensor should have:
+
+* noise
+* bias
+* sampling rate
+* timestamp
+* health status
+* uncertainty
+
+Implement realistic sensor degradation.
+
+---
+
+# 8. FAULT INJECTION
+
+Implement two categories.
+
+## Mechanical / physical faults
+
+At minimum:
+
+```text
+LEAN_MIXTURE_CYL3
+RICH_MIXTURE_CYL1
+COOLING_DEGRADATION_CYL2
+OIL_PRESSURE_LOSS
+TURBO_BOOST_DEFICIENCY
+CYLINDER_MISFIRE
+BEARING_WEAR
+```
+
+## Sensor faults
+
+At minimum:
+
+```text
+EGT3_BIAS
+EGT3_STUCK
+RPM_SENSOR_DRIFT
+OIL_PRESSURE_SENSOR_BIAS
+INTERMITTENT_SENSOR
+```
+
+Faults must have:
+
+* start time
+* severity
+* duration
+* affected subsystem
+* propagation model
+
+Severity:
+
+```text
+0.0 → healthy
+0.25 → mild
+0.5 → moderate
+0.75 → severe
+1.0 → critical
+```
+
+---
+
+# 9. DIGITAL TWIN
+
+The digital twin must maintain two parallel states:
+
+```text
+ACTUAL / OBSERVED ENGINE
+        ↓
+      sensors
+
+HEALTHY EXPECTED ENGINE
+        ↓
+physics model
+```
+
+Calculate:
+
+```text
+residual = observed - expected
+```
+
+Normalize residuals using channel uncertainty.
+
+Implement:
+
+```text
+r_i = (observed_i - expected_i) / sigma_i
+```
+
+Track residual trends over time.
+
+Do not trigger a fault solely from one abnormal sensor sample.
+
+---
+
+# 10. SENSOR VS ENGINE FAULT SEPARATION
+
+This is a critical feature.
+
+The system should determine whether abnormal telemetry is caused by:
+
+```text
+1. Sensor fault
+2. Physical engine fault
+3. Model mismatch
+4. Unknown anomaly
+```
+
+Example:
+
+If EGT3 suddenly increases but:
+
+* EGT1/2/4 remain normal
+* CHT3 remains normal
+* vibration remains normal
+* fuel flow remains normal
+
+the system should increase the probability of:
+
+```text
+EGT3 SENSOR FAULT
+```
+
+rather than:
+
+```text
+CYLINDER FAILURE
+```
+
+But if:
+
+```text
+EGT3 abnormal
+CHT3 abnormal
+fuel flow abnormal
+vibration abnormal
+```
+
+the physical fault probability should increase.
+
+Create a dedicated sensor integrity score.
+
+---
+
+# 11. ANOMALY DETECTION
+
+Implement temporal anomaly detection.
+
+Do NOT classify a fault from a single frame.
+
+Use a rolling time window.
+
+Combine:
+
+```text
+physics residual
++
+temporal anomaly score
++
+operating envelope
++
+sensor confidence
++
+persistence
+```
+
+Generate:
+
+```text
+anomaly_score
+confidence
+persistence
+severity
+```
+
+The anomaly engine should be able to detect previously unseen abnormal behaviour as:
+
+```text
+UNKNOWN_ANOMALY
+```
+
+Do not force every anomaly into a known fault class.
+
+---
+
+# 12. FAULT DIAGNOSIS
+
+Implement a modular diagnosis engine.
+
+Output:
+
+```json
+{
+  "fault": "OIL_PRESSURE_LOSS",
+  "confidence": 0.91,
+  "severity": 0.72,
+  "subsystem": "LUBRICATION",
+  "affected_components": ["oil_system", "bearing_system"],
+  "evidence": [],
+  "alternative_hypotheses": []
+}
+```
+
+The diagnosis should support multiple hypotheses.
+
+Example:
+
+```text
+Primary:
+Oil pressure loss — 0.91
+
+Alternative:
+Oil pressure sensor bias — 0.21
+```
+
+Do not simply return one hard-coded answer.
+
+---
+
+# 13. HEALTH INDEX
+
+Create health scores for:
+
+```text
+ENGINE
+COMBUSTION
+COOLING
+LUBRICATION
+TURBO
+MECHANICAL
+ELECTRICAL
+SENSORS
+```
+
+Health should be between:
+
+```text
+0 → failed
+100 → healthy
+```
+
+Do not make health completely arbitrary.
+
+It should be derived from:
+
+* residuals
+* fault severity
+* degradation
+* sensor confidence
+* operating conditions.
+
+---
+
+# 14. PROGNOSTICS
+
+Implement degradation tracking.
+
+Track degradation state over time.
+
+Generate:
+
+```text
+component_RUL
+engine_RUL
+lower_bound
+upper_bound
+confidence
+```
+
+More importantly implement:
+
+**MISSION-SAFE HORIZON**
+
+This is not simply RUL.
+
+It answers:
+
+> How long can the engine remain within acceptable operating risk under the selected mission conditions?
+
+Example:
+
+```text
+Estimated Engine RUL:
+42.3 hours
+
+Mission-safe horizon:
+6.8 hours
+
+Reason:
+High altitude + extended cruise increases thermal degradation risk.
+```
+
+Clearly label all RUL values as model estimates.
+
+---
+
+# 15. EXPLAINABILITY
+
+Do not create a dashboard that simply says:
+
+```text
+Fault: Oil pressure loss
+Confidence: 94%
+```
+
+Instead generate an evidence chain:
+
+```text
+OBSERVATION
+↓
+Oil pressure decreased 18%
+
+PHYSICS EVIDENCE
+↓
+Oil pressure is inconsistent with current RPM/load
+
+CORRELATED SIGNALS
+↓
+Oil temperature increased
+Vibration increased
+
+DIAGNOSIS
+↓
+Probable lubrication degradation
+
+CONFIDENCE
+↓
+91%
+
+SEVERITY
+↓
+High
+
+MISSION CONSEQUENCE
+↓
+Extended cruise increases predicted risk
+
+RECOMMENDATION
+↓
+Inspect lubrication system before long-duration mission
+```
+
+Every diagnosis should expose this evidence chain.
+
+---
+
+# 16. MISSION DIGITAL TWIN
+
+Create a separate mission model.
+
+Mission parameters:
+
+```text
+mission_name
+duration
+altitude_profile
+throttle_profile
+payload
+environment_temperature
+cruise_duration
+loiter_duration
+```
+
+Represent the mission as a sequence:
+
+```text
+TAKEOFF
+→ CLIMB
+→ CRUISE
+→ LOITER
+→ CRUISE
+→ DESCENT
+→ LANDING
+```
+
+---
+
+# 17. MISSION RISK ENGINE
+
+Calculate mission risk using:
+
+```text
+engine health
++
+fault severity
++
+predicted degradation
++
+mission duration
++
+altitude
++
+thermal load
++
+remaining safe horizon
+```
+
+Return:
+
+```text
+mission_risk_score
+mission_readiness
+critical_phase
+risk_drivers
+```
+
+Do NOT use arbitrary random risk.
+
+Risk should change logically when mission parameters change.
+
+---
+
+# 18. WHAT-IF / COUNTERFACTUAL SIMULATION
+
+This is one of the most important features.
+
+Allow the operator to modify:
+
+```text
+Altitude
+Mission duration
+Throttle
+Payload
+Ambient temperature
+Loiter duration
+```
+
+Then simulate:
+
+```text
+Current mission
+vs
+Modified mission
+```
+
+Display:
+
+```text
+Health trajectory
+Temperature trajectory
+Oil pressure trajectory
+RUL trajectory
+Mission risk
+Safe horizon
+Critical phase
+```
+
+Example question:
+
+> What happens if altitude increases from 20,000 ft to 28,000 ft?
+
+The system should actually rerun the mission simulation and compare the results.
+
+Do NOT fake this with static frontend numbers.
+
+---
+
+# 19. MISSION REPLAY
+
+Implement replay functionality.
+
+The operator should be able to:
+
+* start simulation
+* pause
+* resume
+* change speed
+* inject fault
+* clear fault
+* replay a previous mission
+* inspect the exact moment anomaly began
+
+Support:
+
+```text
+1x
+5x
+10x
+20x
+```
+
+---
+
+# 20. PROVENANCE
+
+Every prediction should contain:
+
+```text
+data_source
+simulation_id
+scenario_id
+model_version
+timestamp
+operating_condition
+```
+
+Possible data sources:
+
+```text
+SIMULATION
+REPLAY
+LIVE
+```
+
+The dashboard must make it clear whether the displayed prediction comes from simulation or real telemetry.
+
+---
+
+# 21. API
+
+Implement FastAPI endpoints:
+
+```text
+GET  /api/state
+GET  /api/health
+GET  /api/diagnosis
+GET  /api/mission
+GET  /api/scenarios
+
+POST /api/simulation/start
+POST /api/simulation/reset
+POST /api/simulation/speed
+
+POST /api/fault/inject
+POST /api/fault/clear
+
+POST /api/mission/create
+POST /api/mission/simulate
+POST /api/mission/what-if
+
+GET /api/replay
+```
+
+WebSocket:
+
+```text
+/ws/telemetry
+```
+
+Stream telemetry at approximately 20 Hz.
+
+---
+
+# 22. FRONTEND
+
+Build a professional aerospace-style ground control interface.
+
+Do NOT make it look like a generic SaaS admin dashboard.
+
+Main layout:
+
+```text
+┌────────────────────────────────────────────────────────────┐
+│ AEROTWIN                    LIVE ●       SIMULATION        │
+├───────────────┬────────────────────────────┬───────────────┤
+│               │                            │               │
+│ ENGINE HEALTH │    3D ENGINE DIGITAL TWIN  │ MISSION      │
+│               │                            │ STATUS        │
+│ 92 / 100      │                            │ READY         │
+│               │                            │               │
+├───────────────┴────────────────────────────┴───────────────┤
+│ TELEMETRY / RESIDUALS / PREDICTIONS                        │
+├────────────────────────────────────────────────────────────┤
+│ DIAGNOSIS        │ EVIDENCE        │ MISSION CONSEQUENCE  │
+├────────────────────────────────────────────────────────────┤
+│ WHAT-IF MISSION SIMULATOR                                  │
+└────────────────────────────────────────────────────────────┘
+```
+
+---
+
+# 23. DASHBOARD SECTIONS
+
+Implement these pages/components:
+
+### Overview
+
+Show:
+
+* engine health
+* mission readiness
+* anomaly score
+* current fault
+* confidence
+* RUL
+* mission-safe horizon
+* telemetry status
+
+### Engine Twin
+
+3D engine representation.
+
+Highlight affected components.
+
+Example:
+
+```text
+red = degraded component
+yellow = warning
+normal = healthy
+```
+
+### Telemetry
+
+Graphs for:
+
+* RPM
+* MAP
+* EGT
+* CHT
+* oil pressure
+* oil temperature
+* vibration
+* voltage
+* fuel flow
+* turbo boost
+
+Allow actual vs expected vs residual.
+
+### Diagnosis
+
+Show:
+
+```text
+Primary hypothesis
+Confidence
+Severity
+Subsystem
+Evidence
+Alternative hypotheses
+```
+
+### Mission
+
+Show:
+
+```text
+Mission phases
+Mission risk
+Critical phase
+Safe horizon
+Risk drivers
+```
+
+### What-if
+
+Sliders:
+
+```text
+Altitude
+Mission duration
+Payload
+Throttle
+Ambient temperature
+Loiter duration
+```
+
+Run simulation and compare against baseline.
+
+### Replay
+
+Timeline showing:
+
+```text
+normal
+→ anomaly
+→ diagnosis
+→ degradation
+```
+
+---
+
+# 24. DESIGN LANGUAGE
+
+Use:
+
+* dark aerospace control-room theme
+* clean typography
+* restrained colors
+* high information density
+* subtle animations
+* readable charts
+* clear severity indicators
+
+Avoid:
+
+* excessive gradients
+* giant cards
+* unnecessary rounded UI
+* generic startup landing-page design
+* fake futuristic decorations
+
+The interface should feel like a real engineering monitoring console.
+
+---
+
+# 25. VALIDATION
+
+Create automated tests for:
+
+### Physics
+
+* throttle increase affects airflow
+* altitude affects ambient pressure
+* oil-pressure degradation affects lubrication state
+* cooling degradation affects CHT
+* turbo deficiency affects MAP
+
+### Sensor faults
+
+Verify:
+
+```text
+EGT3 sensor fault
+```
+
+does NOT automatically produce:
+
+```text
+engine mechanical failure
+```
+
+### Engine faults
+
+Verify:
+
+```text
+oil pressure loss
+```
+
+propagates through the engine model.
+
+### Mission
+
+Verify:
+
+```text
+higher altitude
++
+same mission duration
+```
+
+can change predicted thermal/risk trajectory.
+
+### Counterfactual
+
+Verify that changing mission parameters actually changes simulation output.
+
+---
+
+# 26. VALIDATION SCENARIOS
+
+Create at least these scenarios:
+
+```text
+SCENARIO_01
+Healthy cruise
+
+SCENARIO_02
+Oil pressure degradation
+
+SCENARIO_03
+Turbo boost deficiency
+
+SCENARIO_04
+Cylinder cooling degradation
+
+SCENARIO_05
+Bearing wear
+
+SCENARIO_06
+EGT3 sensor fault
+
+SCENARIO_07
+Combined sensor + engine anomaly
+
+SCENARIO_08
+Unknown anomaly
+
+SCENARIO_09
+High-altitude mission
+
+SCENARIO_10
+Long-duration loiter mission
+```
+
+Each scenario must be reproducible using a seed.
+
+---
+
+# 27. IMPORTANT: AVOID CIRCULAR VALIDATION
+
+Do not train and test an ML model on exactly the same generated distribution.
+
+Create separate:
+
+```text
+training scenarios
+validation scenarios
+unseen test scenarios
+```
+
+Change:
+
+* fault severity
+* noise
+* operating conditions
+* altitude
+* throttle
+* mission duration
+
+between datasets.
+
+If a true ML model cannot be trained reliably during development, use a transparent statistical/rule-based baseline rather than pretending a placeholder model is production AI.
+
+---
+
+# 28. AI STRATEGY
+
+Use hybrid intelligence:
+
+```text
+Physics
++
+Statistical anomaly detection
++
+Temporal ML
++
+Rule-based safety constraints
+```
+
+Physics should provide interpretability and expected behaviour.
+
+ML should identify complex temporal patterns.
+
+Rules should enforce obvious safety constraints.
+
+Do not let the ML model override safety constraints.
+
+---
+
+# 29. UNKNOWN CONDITION DETECTION
+
+The system must be capable of saying:
+
+```text
+UNKNOWN ANOMALY
+```
+
+when the observed behaviour does not sufficiently match known fault signatures.
+
+This is preferable to confidently assigning the wrong known fault.
+
+---
+
+# 30. MODEL DRIFT
+
+Implement a simple:
+
+**Twin Drift Monitor**
+
+If residuals remain systematically high across many healthy channels while no fault evidence exists:
+
+```text
+MODEL DRIFT / OPERATING REGIME MISMATCH
+```
+
+should become a possible explanation.
+
+This prevents the system from treating every mismatch as engine failure.
+
+---
+
+# 31. DECISION SUPPORT
+
+Generate recommendations based on evidence.
+
+Examples:
+
+```text
+CONTINUE
+MONITOR
+REDUCE LOAD
+SHORTEN LOITER
+RETURN TO BASE
+INSPECT BEFORE NEXT MISSION
+```
+
+These recommendations must be derived from configurable thresholds and mission risk.
+
+Clearly label them as system recommendations, not authoritative flight-safety certification.
+
+---
+
+# 32. DEMO MODE
+
+Create a deterministic demo mode.
+
+The demo should run this story:
+
+```text
+1. Healthy engine
+2. Mission starts
+3. Engine operates normally
+4. Small degradation begins
+5. Digital twin detects residual drift
+6. Anomaly score increases
+7. Diagnosis identifies likely fault
+8. Evidence chain explains why
+9. RUL decreases
+10. Mission risk increases
+11. Operator opens What-if
+12. Increases altitude
+13. System reruns mission
+14. Risk changes
+15. Operator reduces loiter duration
+16. Risk decreases
+17. System generates recommendation
+```
+
+This should be executable with one command.
+
+---
+
+# 33. DEMO COMMAND
+
+Provide:
+
+```bash
+python scripts/run_demo.py
+```
+
+which starts:
+
+* backend
+* simulator
+* frontend instructions
+
+Also provide:
+
+```bash
+python scripts/generate_scenarios.py
+python scripts/run_validation.py
+```
+
+---
+
+# 34. DOCUMENTATION
+
+Create:
+
+`README.md`
+
+with:
+
+* problem statement
+* system overview
+* architecture
+* installation
+* running instructions
+* demo instructions
+* API
+* simulation assumptions
+* limitations
+* validation methodology
+
+Create:
+
+`docs/ARCHITECTURE.md`
+
+Explain every module.
+
+Create:
+
+`docs/PHYSICS_MODEL.md`
+
+Explain all simplified physical relationships.
+
+Create:
+
+`docs/AI_MODEL.md`
+
+Explain anomaly detection, diagnosis and prognostics.
+
+Create:
+
+`docs/VALIDATION.md`
+
+Explain the test methodology and metrics.
+
+Important:
+
+Never claim that simulated results are real DRDO validation.
+
+---
+
+# 35. DEVELOPMENT ORDER
+
+Do NOT attempt to build everything simultaneously.
+
+Build in this exact sequence:
+
+## Phase 1
+
+Project structure + schemas + configuration.
+
+## Phase 2
+
+Flight environment + engine physics.
+
+## Phase 3
+
+Sensor model + fault injection.
+
+## Phase 4
+
+Digital twin + residual engine.
+
+## Phase 5
+
+Sensor integrity.
+
+## Phase 6
+
+Anomaly detection.
+
+## Phase 7
+
+Fault diagnosis.
+
+## Phase 8
+
+Health + degradation + RUL.
+
+## Phase 9
+
+Explainability.
+
+## Phase 10
+
+Mission digital twin.
+
+## Phase 11
+
+Mission risk.
+
+## Phase 12
+
+What-if simulation.
+
+## Phase 13
+
+FastAPI + WebSocket.
+
+## Phase 14
+
+React dashboard.
+
+## Phase 15
+
+Replay + demo scenario.
+
+## Phase 16
+
+Tests + validation.
+
+---
+
+# 36. QUALITY CONTROL
+
+After implementing every phase:
+
+1. Run tests.
+2. Fix errors.
+3. Verify API.
+4. Verify simulation output.
+5. Verify frontend integration.
+6. Do not continue while the previous phase is broken.
+
+At the end run:
+
+```bash
+pytest
+```
+
+and the demo.
+
+---
+
+# 37. FINAL ACCEPTANCE CRITERIA
+
+The project is considered complete only when:
+
+* backend starts successfully
+* frontend starts successfully
+* telemetry streams live
+* engine physics changes with operating conditions
+* faults can be injected
+* sensor faults are distinguishable from engine faults
+* anomaly detection works
+* diagnosis works
+* health changes logically
+* degradation changes over time
+* RUL is produced with uncertainty
+* evidence chain is visible
+* mission simulation works
+* mission risk changes with mission conditions
+* what-if simulation actually reruns the model
+* replay works
+* API works
+* WebSocket works
+* tests pass
+* demo scenario works
+* documentation exists
+
+---
+
+# 38. MOST IMPORTANT DESIGN PRINCIPLE
+
+Do not build:
+
+> "A dashboard that shows engine data."
+
+Build:
+
+> **"A mission-aware digital twin that understands the current engine state, predicts degradation, separates sensor faults from physical faults, simulates alternative futures, and explains how engine health affects mission completion."**
+
+The differentiating loop is:
+
+```text
+OBSERVE
+   ↓
+UNDERSTAND
+   ↓
+PREDICT
+   ↓
+SIMULATE
+   ↓
+COMPARE FUTURES
+   ↓
+DECIDE
+```
+
+That loop should be visible throughout the architecture and UI.
+
+---
+
+# START IMPLEMENTATION
+
+First inspect the current workspace.
+
+If an existing project exists, preserve useful code but refactor it into the architecture above.
+
+Do not blindly overwrite working components.
+
+Before writing large amounts of code:
+
+1. inspect the repository
+2. identify reusable modules
+3. create the architecture
+4. implement Phase 1
+5. run tests
+6. continue phase-by-phase
+
+At each phase, leave the project in a runnable state.
+
+Do not stop at pseudocode.
+
+Implement the actual working prototype.
+
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-09-27T11:47:29+05:30.
+</ADDITIONAL_METADATA>
+<USER_SETTINGS_CHANGE>
+The user changed setting `Model Selection` from None to Claude Opus 4.6 (Thinking). No need to comment on this change if the user doesn't ask about it. If reporting what model you are, please use a human readable name instead of the exact string.
+</USER_SETTINGS_CHANGE>
